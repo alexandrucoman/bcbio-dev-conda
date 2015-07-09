@@ -6,7 +6,7 @@ build:
     number: 0
 
 source:
-    git_url: https://github.com/chapmanb/bcbio-nextgen-vm.git
+    git_url: https://github.com/chapmanb/bcbio-nextgen.git
     git_tag: master
 
 requirements:
