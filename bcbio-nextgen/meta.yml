@@ -1,0 +1,60 @@
+package:
+    name: bcbio-nextgen
+    version: '0.9.0'
+
+build:
+    number: 0
+
+source:
+    git_url: https://github.com/chapmanb/bcbio-nextgen-vm.git
+    git_tag: master
+
+requirements:
+    build:
+        - python
+        - setuptools
+
+    run:
+        - python
+        - setuptools
+        - argparse [py26]
+        - azure
+        - biopython
+        - boto
+        - bx-python
+        - cpat
+        - cython
+        - gffutils
+        - ipython
+        - ipython-cluster-helper
+        - joblib
+        - logbook
+        - lxml
+        - matplotlib
+        - msgpack-python
+        - numpy
+        - pandas
+        - progressbar
+        - pybedtools
+        - pysam
+        - pyvcf
+        - pyyaml
+        - pyzmq
+        - requests
+        - seaborn
+        - scipy
+        - toolz
+        - tornado
+        - azure
+
+test:
+    imports:
+        - bcbio.distributed.ipython
+        - bcbio.distributed.multi
+        - bcbio.pipeline.main
+        - bcbio.provenance.do
+
+about:
+    home: https://github.com/chapmanb/bcbio-nextgen
+    license: MIT
+    summary: Validated, scalable, community developed variant calling and RNA-seq analysis
