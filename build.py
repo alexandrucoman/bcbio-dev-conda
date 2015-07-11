@@ -12,6 +12,8 @@ import yaml
 import toolz
 
 ATTEMPTS = 3
+BCBIO = "https://conda.binstar.org/bcbio"
+BCBIO_DEV = "https://conda.binstar.org/bcbio-dev"
 CONFIG = {}
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
@@ -153,7 +155,9 @@ def upload_package(recipe, token):
     if not CONFIG["quiet"]:
         print("[i] Upload %s to binstar." % recipe.name)
 
-    command = ["binstar", "--token", token, "upload", "--force", recipe.path]
+    command = ["binstar", "--token", token, "upload",
+               "--channel", BCBIO_DEV, "--force", recipe.path]
+
     try:
         execute(command, check_exit_code=True)
     except subprocess.CalledProcessError as exc:
@@ -191,6 +195,9 @@ def main():
 
     if args.upload and not args.token:
         raise RuntimeError("No authentication token provided.")
+
+    execute(["conda", "config", "--add", "channels", BCBIO],
+            check_exit_code=True)
 
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
