@@ -1,11 +1,20 @@
 """Update conda packages on binstars with latest versions"""
+from __future__ import print_function
+
+import argparse
+import collections
 import os
 import six
 import subprocess
 import time
+import yaml
+
+import toolz
 
 ATTEMPTS = 3
+CONFIG = {}
 RETRY_INTERVAL = 0.1
+RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
 
 
 def execute(command, **kwargs):
@@ -81,4 +90,113 @@ def execute(command, **kwargs):
             else:
                 raise
 
-        raise RuntimeError("The maximum number of attempts has been exceeded.")
+
+def get_recipes(path=None):
+    """Get all the available conda recipes.
+
+    Returns a namedtuple which contains the following keys:
+        :name:      the name of the recipe
+        :path:      the path for the package
+        :version:   the version of the recipe
+        :build:     the number of builds for the current version
+    """
+    path = path or os.getcwd()
+    recipes = []
+
+    for recipe in os.listdir(path):
+        recipe_path = os.path.join(path, recipe, "meta.yaml")
+        if not os.path.isfile(recipe_path):
+            continue
+
+        output_path, _ = execute(["conda", "build", "--output", recipe])
+        with open(recipe_path, "r") as recipe_handle:
+            config = yaml.safe_load(recipe_handle)
+            recipes.append(RECIPE(
+                name=recipe,
+                path=output_path.strip(),
+                version=toolz.get_in(["package", "version"], config),
+                build=toolz.get_in(["build", "number"], config, 0),
+            ))
+    return recipes
+
+
+def build_recipe(recipe, numpy, upload=False):
+    """Build a new package for conda.
+
+    :param recipe:  an isinstance of Recipe namedtuple
+    :param numpy:   numpy version used by conda build
+    :param upload:  whether to upload conda packages to binstars
+    """
+    command = ["conda", "build"]
+    if numpy:
+        command.extend(["--numpy", numpy])
+    if not upload:
+        command.append("--no-binstar-upload")
+    command.append(recipe.name)
+
+    try:
+        execute(command, check_exit_code=True)
+    except subprocess.CalledProcessError as exc:
+        if not CONFIG["quiet"]:
+            print("Failed to upload the recipe %s: %s" %
+                  (recipe.name, exc.returncode))
+            print("Command output: %s" % exc.output)
+        raise
+
+
+def upload_package(recipe, token):
+    """Upload the package for the received recipe to the binstar.
+
+    :param recipe:  an isinstance of Recipe namedtuple
+    :param token:   authentication token to use
+    """
+    if not CONFIG["quiet"]:
+        print("[i] Upload %s to binstar." % recipe.name)
+
+    command = ["binstar", "--token", token, "upload", "--force", recipe.path]
+    try:
+        execute(command, check_exit_code=True)
+    except subprocess.CalledProcessError as exc:
+        if not CONFIG["quiet"]:
+            print("Failed to upload the recipe %s: %s" %
+                  (recipe.name, exc.returncode))
+            print("Command output: %s" % exc.output)
+        raise
+
+
+def main():
+    """Run the command line application."""
+    parser = argparse.ArgumentParser(
+        description="Build and update conda packages on binstars "
+                    "with latest versions")
+    parser.add_argument(
+        "-u", "--upload", dest="upload", action="store_true",
+        default=False, help="upload conda packages to binstars.")
+    parser.add_argument(
+        "-b", "--branch", dest="branch", default="develop",
+        help="the bcbio-nextgen-vm branch.")
+    parser.add_argument(
+        "-t", "--token", dest="token", default=None,
+        help="authentication token to use, may be a token or a path"
+             "to a file containing a token")
+    parser.add_argument(
+        "-n", "--numpy", dest="numpy", default=19,
+        help="numpy version used by conda build")
+    parser.add_argument(
+        "-q", "--quiet", dest="quiet", action="store_true",
+        default=False)
+
+    args = parser.parse_args()
+    CONFIG["quiet"] = args.quiet
+
+    if args.upload and not args.token:
+        raise RuntimeError("No authentication token provided.")
+
+    for recipe in get_recipes():
+        build_recipe(recipe, args.numpy)
+        if args.upload:
+            upload_package(recipe, args.token)
+
+
+if __name__ == "__main__":
+    main()
