@@ -171,6 +171,23 @@ def upload_package(recipe, token):
         raise
 
 
+def update_branch(branch_name, recipe="bcbio-nextgen-vm"):
+    """Update the branch from the received recipe."""
+    config = {}
+    recipe_path = os.path.join(CONFIG["abspath"], recipe, "meta.yaml")
+    if not os.path.isfile(recipe_path):
+        return
+
+    with open(recipe_path, "r") as recipe_handle:
+        config = yaml.safe_load(recipe_handle)
+        config["source"]["git_tag"] = branch_name
+
+    if config:
+        with open(recipe_path, "w") as recipe_handle:
+            content = yaml.dump(config, indent=4, canonical=True)
+            recipe_handle.write(content)
+
+
 def main():
     """Run the command line application."""
     parser = argparse.ArgumentParser(
@@ -203,6 +220,7 @@ def main():
     execute(["conda", "config", "--add", "channels", BCBIO],
             check_exit_code=True, cwd=CONFIG["abspath"])
 
+    update_branch(args.branch)
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
         if args.upload:
