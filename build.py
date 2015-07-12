@@ -106,7 +106,8 @@ def get_recipes(path=None):
     path = path or CONFIG["abspath"]
     recipes = []
 
-    for recipe in os.listdir(path):
+    for recipe in ("azure-sdk-for-python", "prettytable",
+                   "bcbio-nextgen", "bcbio-nextgen-vm"):
         recipe_path = os.path.join(path, recipe, "meta.yaml")
         if not os.path.isfile(recipe_path):
             continue
