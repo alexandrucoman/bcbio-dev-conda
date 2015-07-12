@@ -5,6 +5,7 @@ import argparse
 import collections
 import os
 import six
+import sys
 import subprocess
 import time
 import yaml
@@ -102,7 +103,7 @@ def get_recipes(path=None):
         :version:   the version of the recipe
         :build:     the number of builds for the current version
     """
-    path = path or os.getcwd()
+    path = path or CONFIG["abspath"]
     recipes = []
 
     for recipe in os.listdir(path):
@@ -110,7 +111,8 @@ def get_recipes(path=None):
         if not os.path.isfile(recipe_path):
             continue
 
-        output_path, _ = execute(["conda", "build", "--output", recipe])
+        output_path, _ = execute(["conda", "build", "--output", recipe],
+                                 cwd=CONFIG["abspath"])
         with open(recipe_path, "r") as recipe_handle:
             config = yaml.safe_load(recipe_handle)
             recipes.append(RECIPE(
@@ -137,7 +139,7 @@ def build_recipe(recipe, numpy, upload=False):
     command.append(recipe.name)
 
     try:
-        execute(command, check_exit_code=True)
+        execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
             print("Failed to upload the recipe %s: %s" %
@@ -159,7 +161,7 @@ def upload_package(recipe, token):
                "--channel", BCBIO_DEV, "--force", recipe.path]
 
     try:
-        execute(command, check_exit_code=True)
+        execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
             print("Failed to upload the recipe %s: %s" %
@@ -192,12 +194,13 @@ def main():
 
     args = parser.parse_args()
     CONFIG["quiet"] = args.quiet
+    CONFIG["abspath"] = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     if args.upload and not args.token:
         raise RuntimeError("No authentication token provided.")
 
     execute(["conda", "config", "--add", "channels", BCBIO],
-            check_exit_code=True)
+            check_exit_code=True, cwd=CONFIG["abspath"])
 
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
