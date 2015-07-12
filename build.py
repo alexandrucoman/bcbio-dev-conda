@@ -142,9 +142,9 @@ def build_recipe(recipe, numpy, upload=False):
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
-            print("Failed to upload the recipe %s: %s" %
-                  (recipe.name, exc.returncode))
-            print("Command output: %s" % exc.output)
+            print("Failed to upload the recipe {name}: {code}"
+                  .format(name=recipe.name, code=exc.returncode))
+            print("Command output: {output}".format(output=exc.output))
         raise
 
 
@@ -155,7 +155,7 @@ def upload_package(recipe, token):
     :param token:   authentication token to use
     """
     if not CONFIG["quiet"]:
-        print("[i] Upload %s to binstar." % recipe.name)
+        print("[i] Upload {recipe} to binstar.".format(recipe=recipe.name))
 
     command = ["binstar", "--token", token, "upload",
                "--channel", BCBIO_DEV, "--force", recipe.path]
@@ -164,9 +164,9 @@ def upload_package(recipe, token):
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
-            print("Failed to upload the recipe %s: %s" %
-                  (recipe.name, exc.returncode))
-            print("Command output: %s" % exc.output)
+            print("Failed to upload the recipe {name}: {code}"
+                  .format(name=recipe.name, code=exc.returncode))
+            print("Command output: {output}".format(output=exc.output))
         raise
 
 
