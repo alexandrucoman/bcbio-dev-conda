@@ -171,8 +171,8 @@ def upload_package(recipe, token):
         raise
 
 
-def update_branch(branch_name, recipe="bcbio-nextgen-vm"):
-    """Update the branch from the received recipe."""
+def mock_recipe(recipe, mock):
+    """Mock fields from the recipe with the recived mocked values."""
     config = {}
     recipe_path = os.path.join(CONFIG["abspath"], recipe, "meta.yaml")
     if not os.path.isfile(recipe_path):
@@ -180,11 +180,11 @@ def update_branch(branch_name, recipe="bcbio-nextgen-vm"):
 
     with open(recipe_path, "r") as recipe_handle:
         config = yaml.safe_load(recipe_handle)
-        config["source"]["git_tag"] = branch_name
 
-    if config:
+    if config and mock:
+        config.update(mock)
+        content = yaml.dump(config, indent=4, canonical=True)
         with open(recipe_path, "w") as recipe_handle:
-            content = yaml.dump(config, indent=4, canonical=True)
             recipe_handle.write(content)
 
 
@@ -194,11 +194,15 @@ def main():
         description="Build and update conda packages on binstars "
                     "with latest versions")
     parser.add_argument(
+        "--bcbio-branch", dest="bcbio_branch", default="develop",
+        help="the bcbio-nextgen-vm branch")
+    parser.add_argument(
+        "--bcbio-repo", dest="bcbio_repo",
+        default="https://github.com/chapmanb/bcbio-nextgen-vm.git",
+        help="the bcbio-nextgen-vm repository")
+    parser.add_argument(
         "-u", "--upload", dest="upload", action="store_true",
         default=False, help="upload conda packages to binstars.")
-    parser.add_argument(
-        "-b", "--branch", dest="branch", default="develop",
-        help="the bcbio-nextgen-vm branch.")
     parser.add_argument(
         "-t", "--token", dest="token", default=None,
         help="authentication token to use, may be a token or a path"
@@ -217,10 +221,14 @@ def main():
     if args.upload and not args.token:
         raise RuntimeError("No authentication token provided.")
 
+    # Update the source from the bcbio-nextgen-vm recipe with the
+    # values from the Travis-CI environment
+    mocked_data = {"source": {"git_url": args.bcbio_repo,
+                              "git_tag": args.bcbio_branch}}
+    mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
+
     execute(["conda", "config", "--add", "channels", BCBIO],
             check_exit_code=True, cwd=CONFIG["abspath"])
-
-    update_branch(args.branch)
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
         if args.upload:
