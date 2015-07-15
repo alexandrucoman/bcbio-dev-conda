@@ -158,8 +158,8 @@ def upload_package(recipe, token):
     if not CONFIG["quiet"]:
         print("[i] Upload {recipe} to binstar.".format(recipe=recipe.name))
 
-    command = ["binstar", "--token", token, "upload",
-               "--channel", BCBIO_DEV, "--force", recipe.path]
+    command = ["binstar", "--token", token, "upload", "-u", "bcbio-dev",
+               "--channel", "linux-64", "--force", recipe.path]
 
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
