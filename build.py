@@ -159,7 +159,7 @@ def upload_package(recipe, token):
         print("[i] Upload {recipe} to binstar.".format(recipe=recipe.name))
 
     command = ["binstar", "--token", token, "upload", "-u", "bcbio-dev",
-               "--channel", "linux-64", "--force", recipe.path]
+               "--channel", "main", "--force", recipe.path]
 
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
