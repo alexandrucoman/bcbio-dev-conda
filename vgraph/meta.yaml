@@ -1,0 +1,34 @@
+package:
+  name: vgraph
+  version: '0.1'
+
+source:
+  fn: vgraph-aa15e69.tar.gz
+  url: https://github.com/bioinformed/vgraph/archive/aa15e69.tar.gz
+  md5: f323950002a3a20fb625eae9217cc232
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - nose
+    - cython
+    - pysam
+
+  run:
+    - python
+    - pysam
+
+test:
+  imports:
+    - vgraph
+    - vgraph.vargraph
+  commands:
+    - vgraph -h
+
+about:
+  home: https://github.com/bioinformed/vgraph
+  license: Apache

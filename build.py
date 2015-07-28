@@ -13,7 +13,6 @@ import yaml
 import toolz
 
 ATTEMPTS = 3
-BCBIO = "https://conda.binstar.org/bcbio"
 BCBIO_DEV = "https://conda.binstar.org/bcbio-dev"
 CONFIG = {}
 RETRY_INTERVAL = 0.1
@@ -227,7 +226,7 @@ def main():
                               "git_tag": args.bcbio_branch}}
     mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
 
-    execute(["conda", "config", "--add", "channels", BCBIO],
+    execute(["conda", "config", "--add", "channels", BCBIO_DEV],
             check_exit_code=True, cwd=CONFIG["abspath"])
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
