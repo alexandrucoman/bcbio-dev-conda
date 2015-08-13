@@ -1,18 +1,18 @@
-package: bcbio-nextgen-vm
+package: bcbio-nextgen
 user: bcbio-dev
 
 platform:
-    - linux-64
+  - linux-64
 
 engine:
-    - python=2.7
+ - python=2.7
 
 install:
-    - conda config --add channels https://conda.binstar.org/bcbio
+  - conda config --add channels https://conda.binstar.org/bcbio-dev
 
 script:
-    - conda build .
+  - conda build .
 
 build_targets:
-    files: conda
-    channels: main
+  files: conda
+  channels: main

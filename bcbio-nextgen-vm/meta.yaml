@@ -1,35 +1,33 @@
 package:
-    name: bcbio-nextgen-vm
-    version: '0.1.0a'
+  name: bcbio-nextgen-vm
+  version: '0.1.0a'
 
 build:
-    number: 0
+  number: 64
 
 source:
-    git_url: https://github.com/chapmanb/bcbio-nextgen-vm.git
-    git_tag: develop
+  git_url: https://github.com/chapmanb/bcbio-nextgen-vm.git
+  git_tag: develop
+
 
 requirements:
-    build:
-        - python
-        - setuptools
+  build:
+    - python
+    - setuptools
 
-    run:
-        - python
-        - setuptools
-        - bcbio-nextgen
-        - elasticluster
-        - nose
-        - six
-        - azure
-        - prettytable
+  run:
+    - python
+    - setuptools
+    - bcbio-nextgen
+    - elasticluster
+    - nose
+    - six
 
 test:
-    imports:
-        - bcbiovm.version
+  imports:
+    - bcbiovm.version
 
 about:
-    home: https://github.com/chapmanb/bcbio-nextgen-vm
-    license: MIT
-    summary: "Run bcbio-nextgen genomic sequencing analyses using isolated
-        containers and virtual machines"
+  home: https://github.com/chapmanb/bcbio-nextgen-vm
+  license: MIT
+  summary: Run bcbio-nextgen genomic sequencing analyses using isolated containers and virtual machines
