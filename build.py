@@ -15,6 +15,7 @@ import toolz
 ATTEMPTS = 3
 BCBIO_DEV = "https://conda.binstar.org/bcbio-dev"
 CONFIG = {}
+CHANNEL = "main"
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
 
@@ -105,10 +106,10 @@ def get_recipes(path=None):
     path = path or CONFIG["abspath"]
     recipes = []
 
-    for recipe in ("azure-sdk-for-python", "prettytable",
-                   "bcbio-nextgen", "bcbio-nextgen-vm"):
+    for recipe in os.listdir(path):
         recipe_path = os.path.join(path, recipe, "meta.yaml")
         if not os.path.isfile(recipe_path):
+            print("[x] Missing meta.yaml for {recipe}.".format(recipe=recipe))
             continue
 
         output_path, _ = execute(["conda", "build", "--output", recipe],
@@ -131,6 +132,7 @@ def build_recipe(recipe, numpy, upload=False):
     :param numpy:   numpy version used by conda build
     :param upload:  whether to upload conda packages to binstars
     """
+    print("[i] Trying to build {recipe} recipe.".format(recipe=recipe))
     command = ["conda", "build"]
     if numpy:
         command.extend(["--numpy", numpy])
@@ -142,7 +144,7 @@ def build_recipe(recipe, numpy, upload=False):
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
-            print("Failed to upload the recipe {name}: {code}"
+            print("Failed to build the recipe {name}: {code}"
                   .format(name=recipe.name, code=exc.returncode))
             print("Command output: {output}".format(output=exc.output))
         raise
