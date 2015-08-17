@@ -22,6 +22,7 @@ requirements:
     - elasticluster
     - nose
     - six
+    - prettytable
 
 test:
   imports:
