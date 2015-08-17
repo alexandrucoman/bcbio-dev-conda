@@ -13,7 +13,8 @@ import yaml
 import toolz
 
 ATTEMPTS = 3
-BCBIO_DEV = "https://conda.binstar.org/bcbio-dev"
+BCBIO_DEV = "bcbio-dev"
+BCBIO_STABLE = "bcbio"
 CONFIG = {}
 CHANNEL = "main"
 RETRY_INTERVAL = 0.1
@@ -106,7 +107,7 @@ def get_recipes(path=None):
     path = path or CONFIG["abspath"]
     recipes = []
 
-    for recipe in os.listdir(path):
+    for recipe in ("bcbio-nextgen", "bcbio-nextgen-vm"):
         recipe_path = os.path.join(path, recipe, "meta.yaml")
         if not os.path.isfile(recipe_path):
             print("[x] Missing meta.yaml for {recipe}.".format(recipe=recipe))
@@ -159,8 +160,8 @@ def upload_package(recipe, token):
     if not CONFIG["quiet"]:
         print("[i] Upload {recipe} to binstar.".format(recipe=recipe.name))
 
-    command = ["binstar", "--token", token, "upload", "-u", "bcbio-dev",
-               "--channel", "main", "--force", recipe.path]
+    command = ["binstar", "--token", token, "upload", "-u", BCBIO_DEV,
+               "--channel", CHANNEL, "--force", recipe.path]
 
     if os.path.exists(recipe.path):
         print("[x] The recipe path is invalid: {recipe}"
@@ -236,8 +237,9 @@ def main():
                               "git_tag": args.bcbio_branch}}
     mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
 
-    execute(["conda", "config", "--add", "channels", BCBIO_DEV],
+    execute(["conda", "config", "--add", "channels", BCBIO_STABLE],
             check_exit_code=True, cwd=CONFIG["abspath"])
+
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
         if args.upload:
