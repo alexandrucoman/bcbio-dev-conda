@@ -144,9 +144,9 @@ def build_recipe(recipe, numpy, upload=False):
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
+        print("Failed to build the recipe {name}: {code}"
+              .format(name=recipe.name, code=exc.returncode))
         if not CONFIG["quiet"]:
-            print("Failed to build the recipe {name}: {code}"
-                  .format(name=recipe.name, code=exc.returncode))
             print("Command output: {output}".format(output=exc.output))
         raise
 
@@ -158,7 +158,7 @@ def upload_package(recipe, token):
     :param token:   authentication token to use
     """
     if not CONFIG["quiet"]:
-        print("[i] Upload {recipe} to binstar.".format(recipe=recipe.name))
+        print("[i] Uploading {recipe} to binstar.".format(recipe=recipe.name))
 
     command = ["binstar", "--token", token, "upload", "-u", BCBIO_DEV,
                "--channel", CHANNEL, "--force", recipe.path]
@@ -169,7 +169,11 @@ def upload_package(recipe, token):
         return
 
     try:
-        execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
+        output = execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
+        if not CONFIG["quiet"]:
+            print("[i] Package {} successfully uploaded.".format(recipe.name))
+            print("[i] Command output: {output}".format(output=output))
+
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
             print("[x] Failed to upload the recipe {name}: {code}"
@@ -183,9 +187,15 @@ def upload_package(recipe, token):
 
 def mock_recipe(recipe, mock):
     """Mock fields from the recipe with the recived mocked values."""
+    if not CONFIG["quiet"]:
+        print("[i] Mocking {recipe} with {mock}."
+              .format(recipe=recipe, mock=mock))
+
     config = {}
     recipe_path = os.path.join(CONFIG["abspath"], recipe, "meta.yaml")
     if not os.path.isfile(recipe_path):
+        print("[x] The recipe path is invalid: {recipe}"
+              .format(recipe=recipe_path))
         return
 
     with open(recipe_path, "r") as recipe_handle:
