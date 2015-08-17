@@ -177,7 +177,7 @@ def upload_package(recipe, token):
     except (subprocess.CalledProcessError, OSError) as exc:
         print("[x] Failed to upload the recipe {recipe}: {error}"
               .format(recipe=recipe, error=exc))
-        if not CONFIG["quiet"]:
+        if not CONFIG["quiet"] and hasattr(exc, "output"):
             print("[i] Command output: {output}".format(output=exc.output))
         raise
 
