@@ -109,12 +109,14 @@ def get_recipes(path=None):
 
     for recipe in ("bcbio-nextgen", "bcbio-nextgen-vm"):
         recipe_path = os.path.join(path, recipe, "meta.yaml")
-        if not os.path.isfile(recipe_path):
+
+        if not os.path.exists(recipe_path):
             print("[x] Missing meta.yaml for {recipe}.".format(recipe=recipe))
             continue
 
-        output_path, _ = execute(["conda", "build", "--output", recipe],
-                                 cwd=CONFIG["abspath"])
+        output_path, _ = execute(["conda", "build", recipe, "--output",
+                                  "--numpy", CONFIG["numpy"]], cwd=path)
+
         with open(recipe_path, "r") as recipe_handle:
             config = yaml.safe_load(recipe_handle)
             recipes.append(RECIPE(
@@ -126,7 +128,7 @@ def get_recipes(path=None):
     return recipes
 
 
-def build_recipe(recipe, numpy, upload=False):
+def build_recipe(recipe, upload=False):
     """Build a new package for conda.
 
     :param recipe:  an isinstance of Recipe namedtuple
@@ -134,17 +136,15 @@ def build_recipe(recipe, numpy, upload=False):
     :param upload:  whether to upload conda packages to binstars
     """
     print("[i] Trying to build {recipe} recipe.".format(recipe=recipe))
-    command = ["conda", "build"]
-    if numpy:
-        command.extend(["--numpy", numpy])
+
+    command = ["conda", "build", recipe.name, "--numpy", CONFIG["numpy"]]
     if not upload:
         command.append("--no-binstar-upload")
-    command.append(recipe.name)
 
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
-        print("Failed to build the recipe {name}: {code}"
+        print("[x] Failed to build the recipe {name}: {code}"
               .format(name=recipe.name, code=exc.returncode))
         if not CONFIG["quiet"]:
             print("Command output: {output}".format(output=exc.output))
@@ -163,7 +163,7 @@ def upload_package(recipe, token):
     command = ["binstar", "--token", token, "upload", "-u", BCBIO_DEV,
                "--channel", CHANNEL, "--force", recipe.path]
 
-    if os.path.exists(recipe.path):
+    if not os.path.exists(recipe.path):
         print("[x] The recipe path is invalid: {recipe}"
               .format(recipe=recipe.path))
         return
@@ -174,15 +174,12 @@ def upload_package(recipe, token):
             print("[i] Package {} successfully uploaded.".format(recipe.name))
             print("[i] Command output: {output}".format(output=output))
 
-    except subprocess.CalledProcessError as exc:
+    except (subprocess.CalledProcessError, OSError) as exc:
+        print("[x] Failed to upload the recipe {recipe}: {error}"
+              .format(recipe=recipe, error=exc))
         if not CONFIG["quiet"]:
-            print("[x] Failed to upload the recipe {name}: {code}"
-                  .format(name=recipe.name, code=exc.returncode))
             print("[i] Command output: {output}".format(output=exc.output))
         raise
-    except (OSError, ValueError) as exc:
-        print("[x] Failed to upload the recipe {name}: {exc}"
-              .format(name=recipe.name, exc=exc))
 
 
 def mock_recipe(recipe, mock):
@@ -193,7 +190,7 @@ def mock_recipe(recipe, mock):
 
     config = {}
     recipe_path = os.path.join(CONFIG["abspath"], recipe, "meta.yaml")
-    if not os.path.isfile(recipe_path):
+    if not os.path.exists(recipe_path):
         print("[x] The recipe path is invalid: {recipe}"
               .format(recipe=recipe_path))
         return
@@ -237,6 +234,7 @@ def main():
     args = parser.parse_args()
     CONFIG["quiet"] = args.quiet
     CONFIG["abspath"] = os.path.dirname(os.path.abspath(sys.argv[0]))
+    CONFIG["numpy"] = args.numpy
 
     if args.upload and not args.token:
         raise RuntimeError("No authentication token provided.")
@@ -253,7 +251,7 @@ def main():
             check_exit_code=True, cwd=CONFIG["abspath"])
 
     for recipe in get_recipes():
-        build_recipe(recipe, args.numpy)
+        build_recipe(recipe)
         if args.upload:
             upload_package(recipe, args.token)
 
