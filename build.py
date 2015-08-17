@@ -239,6 +239,8 @@ def main():
 
     execute(["conda", "config", "--add", "channels", BCBIO_STABLE],
             check_exit_code=True, cwd=CONFIG["abspath"])
+    execute(["conda", "config", "--add", "channels", BCBIO_DEV],
+            check_exit_code=True, cwd=CONFIG["abspath"])
 
     for recipe in get_recipes():
         build_recipe(recipe, args.numpy)
