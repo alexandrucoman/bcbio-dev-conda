@@ -160,14 +160,22 @@ def upload_package(recipe, token):
     command = ["binstar", "--token", token, "upload", "-u", "bcbio-dev",
                "--channel", "main", "--force", recipe.path]
 
+    if os.path.exists(recipe.path):
+        print("[x] The recipe path is invalid: {recipe}"
+              .format(recipe=recipe.path))
+        return
+
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
     except subprocess.CalledProcessError as exc:
         if not CONFIG["quiet"]:
-            print("Failed to upload the recipe {name}: {code}"
+            print("[x] Failed to upload the recipe {name}: {code}"
                   .format(name=recipe.name, code=exc.returncode))
-            print("Command output: {output}".format(output=exc.output))
+            print("[i] Command output: {output}".format(output=exc.output))
         raise
+    except (OSError, ValueError) as exc:
+        print("[x] Failed to upload the recipe {name}: {exc}"
+              .format(name=recipe.name, exc=exc))
 
 
 def mock_recipe(recipe, mock):
