@@ -173,10 +173,9 @@ def upload_package(recipe, token):
         return
 
     try:
-        output = execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
+        execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
         if not CONFIG["quiet"]:
             print("[i] Package {} successfully uploaded.".format(recipe.name))
-            print("[i] Command output: {output}".format(output=output))
 
     except (subprocess.CalledProcessError, OSError) as exc:
         print("[x] Failed to upload the recipe {recipe}: {error}"
