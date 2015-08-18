@@ -51,6 +51,10 @@ def execute(command, **kwargs):
     retry_interval = kwargs.pop("retry_interval", RETRY_INTERVAL)
     shell = kwargs.pop("shell", False)
 
+    if cwd and not os.path.isdir(cwd):
+        print("[w] Invalid value for cwd: {cwd}".format(cwd=cwd))
+        cwd = None
+
     command = [str(argument) for argument in command]
     ignore_exit_code = False
 
@@ -107,7 +111,7 @@ def get_recipes(path=None):
     path = path or CONFIG["abspath"]
     recipes = []
 
-    for recipe in ("bcbio-nextgen", "bcbio-nextgen-vm"):
+    for recipe in ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm"):
         recipe_path = os.path.join(path, recipe, "meta.yaml")
 
         if not os.path.exists(recipe_path):
