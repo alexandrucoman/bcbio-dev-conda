@@ -7,7 +7,7 @@ source:
   git_tag: bcbio
 
 build:
-  number: 0
+  number: 11
 
 requirements:
   build:
