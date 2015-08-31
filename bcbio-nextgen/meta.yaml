@@ -19,7 +19,7 @@ requirements:
     - python
     - setuptools
     - argparse [py26]
-    - azure
+    - azure-sdk-for-python
     - biopython
     - boto
     - bx-python
