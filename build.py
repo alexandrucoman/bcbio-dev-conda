@@ -19,6 +19,7 @@ CONFIG = {}
 CHANNEL = "main"
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
+RECIPE_ORDER = ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm")
 
 
 def execute(command, **kwargs):
@@ -111,7 +112,7 @@ def get_recipes(path=None):
     path = path or CONFIG["abspath"]
     recipes = []
 
-    for recipe in ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm"):
+    for recipe in RECIPE_ORDER:
         recipe_path = os.path.join(path, recipe, "meta.yaml")
 
         if not os.path.exists(recipe_path):
@@ -150,8 +151,13 @@ def build_recipe(recipe, upload=False):
     except subprocess.CalledProcessError as exc:
         print("[x] Failed to build the recipe {name}: {code}"
               .format(name=recipe.name, code=exc.returncode))
+
         if not CONFIG["quiet"]:
-            print("Command output: {output}".format(output=exc.output))
+            stdout, stderr = exc.output
+            print("[i] [STDOUT] Command output:\n{output}"
+                  .format(output=stdout))
+            print("[i] [STDERR] Command output:\n{output}"
+                  .format(output=stderr))
         raise
 
 
@@ -181,7 +187,11 @@ def upload_package(recipe, token):
         print("[x] Failed to upload the recipe {recipe}: {error}"
               .format(recipe=recipe, error=exc))
         if not CONFIG["quiet"] and hasattr(exc, "output"):
-            print("[i] Command output: {output}".format(output=exc.output))
+            stdout, stderr = exc.output
+            print("[i] [STDOUT] Command output:\n{output}"
+                  .format(output=stdout))
+            print("[i] [STDERR] Command output:\n{output}"
+                  .format(output=stderr))
         raise
 
 
