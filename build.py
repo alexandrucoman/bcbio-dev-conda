@@ -218,6 +218,21 @@ def mock_recipe(recipe, mock):
             recipe_handle.write(content)
 
 
+def add_channel(channel):
+    """Add the received channel to conda channels."""
+    try:
+        execute(["conda", "config", "--add", "channels", channel],
+                check_exit_code=True, cwd=CONFIG["abspath"])
+
+        if not CONFIG["quiet"]:
+            print("[i] Channel {} successfully added.".format(channel))
+
+    except (subprocess.CalledProcessError, OSError) as exc:
+        print("[x] Failed to add the channel {channel}: {error}"
+              .format(channel=channel, error=exc))
+        raise
+
+
 def main():
     """Run the command line application."""
     parser = argparse.ArgumentParser(
@@ -258,10 +273,8 @@ def main():
                               "git_tag": args.bcbio_branch}}
     mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
 
-    execute(["conda", "config", "--add", "channels", BCBIO_STABLE],
-            check_exit_code=True, cwd=CONFIG["abspath"])
-    execute(["conda", "config", "--add", "channels", BCBIO_DEV],
-            check_exit_code=True, cwd=CONFIG["abspath"])
+    for channel in (BCBIO_STABLE, BCBIO_DEV):
+        add_channel(channel)
 
     for recipe in get_recipes():
         build_recipe(recipe)
