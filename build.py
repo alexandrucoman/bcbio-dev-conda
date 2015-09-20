@@ -100,6 +100,15 @@ def execute(command, **kwargs):
                 raise
 
 
+def system_info():
+    """Print information related to the environment."""
+    if CONFIG["quiet"]:
+        return
+
+    conda_info, _ = execute(["conda", "info", "--all"])
+    print("Conda info:\n{conda_info}".format(conda_info=conda_info))
+
+
 def get_recipes(path=None):
     """Get all the available conda recipes.
 
@@ -153,6 +162,7 @@ def build_recipe(recipe, upload=False):
               .format(name=recipe.name, code=exc.returncode))
 
         if not CONFIG["quiet"]:
+            # pylint: disable=unpacking-non-sequence
             stdout, stderr = exc.output
             print("[i] [STDOUT] Command output:\n{output}"
                   .format(output=stdout))
@@ -187,6 +197,7 @@ def upload_package(recipe, token):
         print("[x] Failed to upload the recipe {recipe}: {error}"
               .format(recipe=recipe, error=exc))
         if not CONFIG["quiet"] and hasattr(exc, "output"):
+            # pylint: disable=unpacking-non-sequence
             stdout, stderr = exc.output
             print("[i] [STDOUT] Command output:\n{output}"
                   .format(output=stdout))
@@ -273,9 +284,14 @@ def main():
                               "git_tag": args.bcbio_branch}}
     mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
 
+    # Add the bcbio and bcbio-dev channels
     for channel in (BCBIO_STABLE, BCBIO_DEV):
         add_channel(channel)
 
+    # Print system information before building the recipes
+    system_info()
+
+    # Build the conda recipes
     for recipe in get_recipes():
         build_recipe(recipe)
         if args.upload:
