@@ -19,7 +19,7 @@ CONFIG = {}
 CHANNEL = "main"
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
-RECIPE_ORDER = ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm")
+RECIPE_ORDER = ("bcbio-nextgen", "bcbio-nextgen-vm")
 
 
 def execute(command, **kwargs):
