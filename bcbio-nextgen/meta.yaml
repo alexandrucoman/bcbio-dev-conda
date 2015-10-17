@@ -36,8 +36,10 @@ requirements:
     - numpy
     - pandas
     - progressbar
+    - psutil
     - pybedtools
     - pysam
+    - pythonpy
     - pyvcf
     - pyyaml
     - pyzmq
