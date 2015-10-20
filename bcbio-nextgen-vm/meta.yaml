@@ -23,35 +23,6 @@ requirements:
     - nose
     - six
     - prettytable
-    - azure-sdk-for-python
-    - biopython
-    - boto
-    - bx-python
-    - cpat
-    - cython
-    - gffutils
-    - ipyparallel
-    - ipython-cluster-helper
-    - joblib
-    - logbook
-    - lxml
-    - matplotlib
-    - msgpack-python
-    - numpy
-    - pandas
-    - progressbar
-    - psutil
-    - pybedtools
-    - pysam
-    - pythonpy
-    - pyvcf
-    - pyyaml
-    - pyzmq
-    - requests
-    - seaborn
-    - scipy
-    - toolz
-    - tornado
 
 test:
   imports:
