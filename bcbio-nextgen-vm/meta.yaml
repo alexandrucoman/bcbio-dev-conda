@@ -58,7 +58,6 @@ test:
     - bcbiovm.version
     - bcbiovm.provider.aws.aws_provider
     - bcbiovm.provider.azure.azure_provider
-    - bcbiovm.container.docker.docker_container
 
 about:
   home: https://github.com/chapmanb/bcbio-nextgen-vm
