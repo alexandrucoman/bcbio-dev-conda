@@ -19,7 +19,6 @@ CONFIG = {}
 CHANNEL = "main"
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
-RECIPE_ORDER = ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm")
 
 
 def execute(command, **kwargs):
@@ -109,7 +108,7 @@ def system_info():
     print("Conda info:\n{conda_info}".format(conda_info=conda_info))
 
 
-def get_recipes(path=None):
+def get_recipes(recipe_order, path=None):
     """Get all the available conda recipes.
 
     Returns a namedtuple which contains the following keys:
@@ -119,9 +118,10 @@ def get_recipes(path=None):
         :build:     the number of builds for the current version
     """
     path = path or CONFIG["abspath"]
+    recipe_order = recipe_order or ("elasticluster", "bcbio-nextgen-vm")
     recipes = []
 
-    for recipe in RECIPE_ORDER:
+    for recipe in recipe_order:
         recipe_path = os.path.join(path, recipe, "meta.yaml")
 
         if not os.path.exists(recipe_path):
@@ -153,7 +153,7 @@ def build_recipe(recipe, upload=False):
 
     command = ["conda", "build", recipe.name, "--numpy", CONFIG["numpy"]]
     if not upload:
-        command.append("--no-binstar-upload")
+        command.append("--no-anaconda-upload")
 
     try:
         execute(command, check_exit_code=True, cwd=CONFIG["abspath"])
@@ -267,6 +267,10 @@ def main():
         "-n", "--numpy", dest="numpy", default=19,
         help="numpy version used by conda build")
     parser.add_argument(
+        "-r", "--recipes", dest="recipes", action="append", default=None,
+        choices=["elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm"]
+    )
+    parser.add_argument(
         "-q", "--quiet", dest="quiet", action="store_true",
         default=False)
 
@@ -292,7 +296,7 @@ def main():
     system_info()
 
     # Build the conda recipes
-    for recipe in get_recipes():
+    for recipe in get_recipes(args.recipes):
         build_recipe(recipe)
         if args.upload:
             upload_package(recipe, args.token)
