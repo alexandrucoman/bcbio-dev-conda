@@ -151,7 +151,9 @@ def build_recipe(recipe, upload=False):
     """
     print("[i] Trying to build {recipe} recipe.".format(recipe=recipe))
 
-    command = ["conda", "build", recipe.name, "--numpy", CONFIG["numpy"]]
+    command = ["conda", "build", "--python", 27, recipe.name,
+               "--numpy", CONFIG["numpy"]]
+
     if not upload:
         command.append("--no-anaconda-upload")
 
@@ -264,7 +266,7 @@ def main():
         help="authentication token to use, may be a token or a path"
              "to a file containing a token")
     parser.add_argument(
-        "-n", "--numpy", dest="numpy", default=19,
+        "-n", "--numpy", dest="numpy", default=110,
         help="numpy version used by conda build")
     parser.add_argument(
         "-q", "--quiet", dest="quiet", action="store_true",
