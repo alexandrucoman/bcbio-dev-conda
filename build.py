@@ -16,7 +16,6 @@ ATTEMPTS = 3
 BCBIO_DEV = "bcbio-dev"
 BCBIO_STABLE = "bcbio"
 CONFIG = {}
-CHANNEL = "main"
 RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
 RECIPE_ORDER = ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm")
@@ -183,7 +182,8 @@ def upload_package(recipe, token):
         print("[i] Uploading {recipe} to binstar.".format(recipe=recipe.name))
 
     command = ["binstar", "--token", token, "upload", "-u", BCBIO_DEV,
-               "--channel", CHANNEL, "--force", recipe.path]
+               "--channel", "main", "--channel", "linux-64",
+               "--force", recipe.path]
 
     if not os.path.exists(recipe.path):
         print("[x] The recipe path is invalid: {recipe}"
