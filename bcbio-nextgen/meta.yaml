@@ -46,6 +46,7 @@ requirements:
     - requests
     - seaborn
     - scipy
+    - statsmodels
     - toolz
     - tornado
 
