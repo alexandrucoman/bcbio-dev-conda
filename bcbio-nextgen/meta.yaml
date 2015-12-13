@@ -18,7 +18,6 @@ requirements:
   run:
     - python
     - setuptools
-    - argparse [py26]
     - azure-sdk-for-python
     - biopython
     - boto

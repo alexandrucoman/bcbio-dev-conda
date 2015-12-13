@@ -20,6 +20,8 @@ RETRY_INTERVAL = 0.1
 RECIPE = collections.namedtuple("Recipe", ["name", "path", "build", "version"])
 RECIPE_ORDER = ("elasticluster", "bcbio-nextgen", "bcbio-nextgen-vm")
 
+_REPO = "https://github.com/%s/%s"
+
 
 def execute(command, **kwargs):
     """Helper method to shell out and execute a command through subprocess.
@@ -198,6 +200,7 @@ def upload_package(recipe, token):
     except (subprocess.CalledProcessError, OSError) as exc:
         print("[x] Failed to upload the recipe {recipe}: {error}"
               .format(recipe=recipe, error=exc))
+
         if not CONFIG["quiet"] and hasattr(exc, "output"):
             # pylint: disable=unpacking-non-sequence
             stdout, stderr = exc.output
@@ -255,9 +258,11 @@ def main():
         "--bcbio-branch", dest="bcbio_branch", default="develop",
         help="the bcbio-nextgen-vm branch")
     parser.add_argument(
-        "--bcbio-repo", dest="bcbio_repo",
-        default="https://github.com/chapmanb/bcbio-nextgen-vm.git",
-        help="the bcbio-nextgen-vm repository")
+        "--bcbiovm-branch", dest="bcbiovm_branch", default="develop",
+        help="the bcbio-nextgen-vm branch")
+    parser.add_argument(
+        "--username", dest="username", default="chapmanb",
+        help="The owner of the bcbio repositories.")
     parser.add_argument(
         "-u", "--upload", dest="upload", action="store_true",
         default=False, help="upload conda packages to binstars.")
@@ -282,9 +287,21 @@ def main():
 
     # Update the source from the bcbio-nextgen-vm recipe with the
     # values from the Travis-CI environment
-    mocked_data = {"source": {"git_url": args.bcbio_repo,
-                              "git_tag": args.bcbio_branch}}
-    mock_recipe(recipe="bcbio-nextgen-vm", mock=mocked_data)
+    mocked_data = {
+        "bcbio-nextgen-vm": {
+            "source": {
+                "git_url":  _REPO % (args.username, "bcbio-nextgen-vm"),
+                "git_tag": args.bcbiovm_branch}
+        },
+        "bcbio-nextgen": {
+            "source": {
+                "git_url": _REPO % (args.username, "bcbio-nextgen"),
+                "git_tag": args.bcbio_branch}
+        },
+    }
+
+    for recipe in mocked_data:
+        mock_recipe(recipe=recipe, mock=mocked_data[recipe])
 
     # Add the bcbio and bcbio-dev channels
     for channel in (BCBIO_STABLE, BCBIO_DEV):
