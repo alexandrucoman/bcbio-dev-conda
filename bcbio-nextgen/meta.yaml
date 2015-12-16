@@ -48,6 +48,7 @@ requirements:
     - statsmodels
     - toolz
     - tornado
+    - cyvcf2
 
 test:
   imports:
