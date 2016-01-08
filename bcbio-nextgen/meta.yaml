@@ -1,6 +1,6 @@
 package:
   name: bcbio-nextgen
-  version: '0.9.5'
+  version: '0.9.6a'
 
 build:
   number: 100
@@ -17,13 +17,16 @@ requirements:
 
   run:
     - python
-    - setuptools
+    - arrow
     - azure-sdk-for-python
+    - bioblend
     - biopython
     - boto
-    - bx-python
-    - cpat
+    - click
     - cython
+    - cyvcf2
+    - fabric
+    - fadapa
     - gffutils
     - ipyparallel
     - ipython-cluster-helper
@@ -32,23 +35,36 @@ requirements:
     - lxml
     - matplotlib
     - msgpack-python
+    - nose
     - numpy
+    - openpyxl
+    - openssl
     - pandas
+    - path.py
+    - patsy
+    - pip
+    - pycrypto
     - progressbar
     - psutil
+    - python-dateutil
     - pybedtools
     - pysam
-    - pythonpy
     - pyvcf
     - pyyaml
     - pyzmq
+    - reportlab
     - requests
-    - seaborn
+    - scikit-learn
     - scipy
+    - seaborn
+    - seqcluster
+    - sh
+    - sqlalchemy
     - statsmodels
+    - tabulate
     - toolz
     - tornado
-    - cyvcf2
+
 
 test:
   imports:
