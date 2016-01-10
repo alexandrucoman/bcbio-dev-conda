@@ -14,7 +14,6 @@ import toolz
 
 ATTEMPTS = 3
 BCBIO_DEV = "bcbio-dev"
-BCBIO_STABLE = "bcbio"
 BIOCONDA = "bioconda"
 CONFIG = {}
 RETRY_INTERVAL = 0.1
@@ -305,7 +304,7 @@ def main():
         mock_recipe(recipe=recipe, mock=mocked_data[recipe])
 
     # Add the bcbio and bcbio-dev channels
-    for channel in (BCBIO_STABLE, BCBIO_DEV, BIOCONDA):
+    for channel in (BIOCONDA, BCBIO_DEV):
         add_channel(channel)
 
     # Print system information before building the recipes
